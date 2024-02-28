@@ -26,7 +26,7 @@ export const useTodosStore = defineStore('todos', () => {
         isEditingModal.value = true;
     }
 
-    const addTask = () => {
+    const addTodo = () => {
         if (editingTodo.value) {
             // Если редактируемая задача существует, обновляем её текст
             editingTodo.value.text = inputValue.value;
@@ -50,7 +50,7 @@ export const useTodosStore = defineStore('todos', () => {
     const updateInputValue = (value) => {
         inputValue.value = value;
     };
-    const editTask = () => {
+    const editTodo = () => {
         // if (editingTodo.value) {
         //     const editedTodoIndex = todos.value.findIndex(todo => todo.id === editingTodo.value.id);
         //     if (editedTodoIndex !== -1) {
@@ -69,8 +69,8 @@ export const useTodosStore = defineStore('todos', () => {
         closeModal,
         openEditModal,
         inputValue,
-        addTask,
+        addTodo,
         updateInputValue,
-        editTask
+         editTodo
     }
 });

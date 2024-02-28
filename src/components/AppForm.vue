@@ -14,7 +14,7 @@ const store = useTodosStore();
       </h2>
       <AppCloseButton />
     </div>
-    <form action="#" class="form flex flex-col justify-between gap-4" @submit.prevent="store.addTask">
+    <form action="#" class="form flex flex-col justify-between gap-4" @submit.prevent="store.addTodo">
       <div class="w-full flex flex-col gap-4">
         <label>Название</label>
         <AppInput  :value="''"/>

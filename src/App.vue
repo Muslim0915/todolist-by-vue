@@ -6,7 +6,6 @@ import {ref} from "vue";
 import {useTodosStore} from '@/store/TodosStore.js'
 import TodoItem from "@/components/TodoItem.vue";
 
-const isModalShown = ref(false);
 const store = useTodosStore();
 
 const openModal = () => {
