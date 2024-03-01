@@ -1,22 +1,36 @@
 <script setup>
 import 'typeface-poppins';
 import AppButton from "@/components/UI/AppButton.vue";
-import AppModal from "@/components/AppModal.vue";
-import {ref} from "vue";
+import {computed, defineAsyncComponent, ref} from "vue";
 // import {useTodosStore} from '@/store/TodosStore.js'
 import TodoItem from "@/components/TodoItem.vue";
+import {useToast} from "vue-toastification";
 
-const todos = ref([
+const AppModal = defineAsyncComponent(() => import('@/components/AppModal.vue'));
+
+const toast = useToast();
+
+
+const inputValue = ref('');
+const isEditingModal = ref(false);
+
+const todos = [
   { id: 1, text: 'Learn JS', completed: false },
   { id: 2, text: 'Learn Vue', completed: false },
   { id: 3, text: 'Learn React', completed: false },
-]);
+];
 
 // const store = useTodosStore();
 
 const openEditModal = (id) =>{
   isModalShown.value = true;
   isEditingModal.value = true;
+  todos.map(todo => {
+    if (todo.id === id) {
+      inputValue.value = todo.text
+      console.log(inputValue.value);
+    }
+  });
 }
 const isModalShown = ref(false);
 
@@ -26,8 +40,31 @@ const closeModal = () => {
 const openCreateModal = () => {
   isModalShown.value = true;
   isEditingModal.value = false;
+  inputValue.value = '';
 };
-const isEditingModal = ref(false);
+const addTodo = computed(()=>{
+  return ()=>{
+    if (inputValue.value === '') {
+      toast.error('You must fill the input')
+    }
+    else {
+      todos.push({
+        id: Date.now(),
+        text: inputValue.value,
+        completed: false
+      });
+      toast.success('Todo added')
+      closeModal();
+      inputValue.value = '';
+    }
+  }
+})
+const saveTodo = () =>{
+  if (inputValue.value === '') {
+    toast.error('You must fill the input')
+  }
+}
+
 
 </script>
 
@@ -36,8 +73,12 @@ const isEditingModal = ref(false);
 
     <AppModal
         v-if="isModalShown"
-        @closeModal="closeModal"
         :isEditingModal="isEditingModal"
+        v-model:inputValue="inputValue"
+        @addTodo="addTodo()"
+        @saveTodo="saveTodo()"
+        @closeModal="closeModal()"
+        v-model="inputValue"
     />
     <div class="h-20 bg-black">
       <div class="container h-full mx-auto px-4 flex justify-between items-center">
