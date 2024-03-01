@@ -1,6 +1,6 @@
 <script setup>
 import AppButton from "@/components/UI/AppButton.vue";
-import { useTodosStore } from "@/store/TodosStore.js";
+// import { useTodosStore } from "@/store/TodosStore.js";
 
 const props = defineProps({
   id: {
@@ -13,10 +13,12 @@ const props = defineProps({
   },
 });
 
-const store = useTodosStore();
+const emit = defineEmits(['editTodo']);
+
+// const store = useTodosStore();
 
 const editTodo = () => {
-  store.openEditModal(props.id);
+  emit('editTodo', props.id);
 };
 </script>
 <template>
