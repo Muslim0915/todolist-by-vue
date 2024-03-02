@@ -1,34 +1,38 @@
 <script setup>
 import 'typeface-poppins';
 import AppButton from "@/components/UI/AppButton.vue";
-import {computed, defineAsyncComponent, ref} from "vue";
+import {defineAsyncComponent, ref} from "vue";
 // import {useTodosStore} from '@/store/TodosStore.js'
 import TodoItem from "@/components/TodoItem.vue";
 import {useToast} from "vue-toastification";
+import AppSelect from "@/components/UI/AppSelect.vue";
 
 const AppModal = defineAsyncComponent(() => import('@/components/AppModal.vue'));
 
 const toast = useToast();
 
+const editingElement = ref(null);
+
 
 const inputValue = ref('');
 const isEditingModal = ref(false);
 
-const todos = [
-  { id: 1, text: 'Learn JS', completed: false },
-  { id: 2, text: 'Learn Vue', completed: false },
-  { id: 3, text: 'Learn React', completed: false },
-];
+const todos = ref([]);
+
+todos.value = JSON.parse(localStorage.getItem("todos")) || [];
+
+const saveDataToLocalStorage = () => {
+  localStorage.setItem("todos", JSON.stringify(todos.value));
+};
 
 // const store = useTodosStore();
-
 const openEditModal = (id) =>{
-  isModalShown.value = true;
   isEditingModal.value = true;
-  todos.map(todo => {
+  isModalShown.value = true;
+  editingElement.value = id
+  todos.value.map(todo => {
     if (todo.id === id) {
       inputValue.value = todo.text
-      console.log(inputValue.value);
     }
   });
 }
@@ -36,35 +40,50 @@ const isModalShown = ref(false);
 
 const closeModal = () => {
   isModalShown.value = false;
+  editingElement.value = null;
 };
 const openCreateModal = () => {
   isModalShown.value = true;
   isEditingModal.value = false;
   inputValue.value = '';
+  console.log('opened')
 };
-const addTodo = computed(()=>{
-  return ()=>{
-    if (inputValue.value === '') {
-      toast.error('You must fill the input')
-    }
-    else {
-      todos.push({
+const addTodo = (inputValue) => {
+  todos.value.push({
         id: Date.now(),
-        text: inputValue.value,
+    text: inputValue,
         completed: false
       });
       toast.success('Todo added')
       closeModal();
-      inputValue.value = '';
-    }
-  }
-})
-const saveTodo = () =>{
-  if (inputValue.value === '') {
-    toast.error('You must fill the input')
-  }
+      saveDataToLocalStorage();
 }
 
+
+const saveTodo = (editingInputValue) => {
+  const editingTodo = todos.value.find(todo => todo.id === editingElement.value)
+  if(editingTodo) {
+    editingTodo.text = editingInputValue;
+    toast.success('Todo was updated')
+  }
+  closeModal();
+  saveDataToLocalStorage();
+}
+const deleteTodo = () => {
+  todos.value = todos.value.filter(todo => todo.id !== editingElement.value);
+  toast.success('Todo was deleted');
+  closeModal();
+  saveDataToLocalStorage();
+}
+
+const todoCompleted = (id) => {
+  todos.value.map(todo => {
+    if (todo.id === id) {
+      todo.completed = !todo.completed
+    }
+  })
+  saveDataToLocalStorage();
+}
 
 </script>
 
@@ -74,29 +93,36 @@ const saveTodo = () =>{
     <AppModal
         v-if="isModalShown"
         :isEditingModal="isEditingModal"
-        v-model:inputValue="inputValue"
-        @addTodo="addTodo()"
-        @saveTodo="saveTodo()"
-        @closeModal="closeModal()"
         v-model="inputValue"
+        @addTodo="addTodo($event)"
+        @saveTodo="saveTodo($event)"
+        @closeModal="closeModal()"
+        @deleteTodo="deleteTodo()"
     />
     <div class="h-20 bg-black">
       <div class="container h-full mx-auto px-4 flex justify-between items-center">
         <div class="text-white text-3xl font-bold tracking-widest">TODOLIST</div>
-        <AppButton class="border-white hover:bg-white hover:text-black" text="Создать" @click="openCreateModal"/>
+        <AppButton class="border-white hover:bg-white hover:text-black uppercase tracking-widest" text="Create" @click="openCreateModal"/>
       </div>
     </div>
     <main class="main my-8">
       <section>
         <div class="container mx-auto px-4">
-          <h1 class="text-3xl font-bold tracking-widest text-white">Список задач</h1>
-          <div class="flex justify-between items-center gap-4 flex-wrap mt-8">
+          <div class="flex items-center justify-between">
+          <h1 v-if="todos.length > 0" class="text-3xl font-bold tracking-widest text-white uppercase">list of todos</h1>
+          <h1 v-else class="text-3xl font-bold tracking-widest text-white uppercase">list of todos empty</h1>
+            <AppSelect />
+          </div>
+          <div class="flex items-center gap-28 flex-wrap mt-8">
             <TodoItem
                 v-for="todo in todos"
                 :key="todo.id"
                 :title="todo.text"
                 :id="todo.id"
-                @editTodo="openEditModal(todo.id)"
+                :data-isCompleted="todo.completed"
+                :class="todo.completed ? 'line-through text-gray-500' : ''"
+                @editTodo="openEditModal($event)"
+                @todoCompleted="todoCompleted($event)"
             />
           </div>
         </div>

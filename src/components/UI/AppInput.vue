@@ -12,7 +12,7 @@ const inputValue = defineModel();
   <input
       v-model="inputValue"
       class="w-full border border-gray-500 rounded p-2 outline-0"
-      placeholder="Введите текст"
+      placeholder="Enter text"
       type="text"
   />
 </template>
