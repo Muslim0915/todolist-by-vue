@@ -1,7 +1,7 @@
 <script setup>
 import 'typeface-poppins';
 import AppButton from "@/components/UI/AppButton.vue";
-import {defineAsyncComponent, ref} from "vue";
+import {computed, defineAsyncComponent, ref} from "vue";
 // import {useTodosStore} from '@/store/TodosStore.js'
 import TodoItem from "@/components/TodoItem.vue";
 import {useToast} from "vue-toastification";
@@ -46,7 +46,6 @@ const openCreateModal = () => {
   isModalShown.value = true;
   isEditingModal.value = false;
   inputValue.value = '';
-  console.log('opened')
 };
 const addTodo = (inputValue) => {
   todos.value.push({
@@ -84,6 +83,27 @@ const todoCompleted = (id) => {
   })
   saveDataToLocalStorage();
 }
+const options = [
+  {value: 'title', name: 'Sort by name'},
+  {value: 'completed', name: 'Sort by completed'},
+];
+
+const selectedSort = ref('')
+
+const sortedTodos = computed(() => {
+ return [...todos.value].sort((a, b) => a[selectedSort]?.localeCompare(b[selectedSort]))
+});
+
+const handleSortUpdate = (value) => {
+  selectedSort.value = value;
+  console.log(selectedSort.value);
+}
+const deleteAllTodos = () => {
+  if (todos.value.length === 0) return toast.info('Nothing to delete :)')
+  todos.value = [];
+  saveDataToLocalStorage();
+  toast.success('Todos Deleted')
+}
 
 </script>
 
@@ -111,11 +131,18 @@ const todoCompleted = (id) => {
           <div class="flex items-center justify-between">
           <h1 v-if="todos.length > 0" class="text-3xl font-bold tracking-widest text-white uppercase">list of todos</h1>
           <h1 v-else class="text-3xl font-bold tracking-widest text-white uppercase">list of todos empty</h1>
-            <AppSelect />
+            <div class="flex items-center gap-10">
+              <AppButton text="Delete All" @click="deleteAllTodos()" class="bg-red-800 border-red-800 hover:bg-red-700" />
+              <AppSelect
+                  v-model="selectedSort"
+                  :options="options"
+                  @update:modelValue="handleSortUpdate($event)"
+              />
+            </div>
           </div>
           <div class="flex items-center gap-28 flex-wrap mt-8">
             <TodoItem
-                v-for="todo in todos"
+                v-for="todo in sortedTodos"
                 :key="todo.id"
                 :title="todo.text"
                 :id="todo.id"
